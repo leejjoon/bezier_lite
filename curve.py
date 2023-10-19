@@ -289,3 +289,44 @@ class Curve(_base.Base):
         new_nodes = _curve_helpers.specialize_curve(self._nodes, start, end)
         return Curve(new_nodes, self._degree, copy=False, verify=False)
 
+    def subdivide(self):
+        r"""Split the curve :math:`B(s)` into a left and right half.
+
+        Takes the interval :math:`\left[0, 1\right]` and splits the curve into
+        :math:`B_1 = B\left(\left[0, \frac{1}{2}\right]\right)` and
+        :math:`B_2 = B\left(\left[\frac{1}{2}, 1\right]\right)`. In
+        order to do this, also reparameterizes the curve, hence the resulting
+        left and right halves have new nodes.
+
+        .. image:: ../../images/curve_subdivide.png
+           :align: center
+
+        .. doctest:: curve-subdivide
+           :options: +NORMALIZE_WHITESPACE
+
+           >>> nodes = np.asfortranarray([
+           ...     [0.0, 1.25, 2.0],
+           ...     [0.0, 3.0 , 1.0],
+           ... ])
+           >>> curve = bezier.Curve(nodes, degree=2)
+           >>> left, right = curve.subdivide()
+           >>> left.nodes
+           array([[0.   , 0.625, 1.125],
+                  [0.   , 1.5  , 1.75 ]])
+           >>> right.nodes
+           array([[1.125, 1.625, 2.   ],
+                  [1.75 , 2.   , 1.   ]])
+
+        .. testcleanup:: curve-subdivide
+
+           import make_images
+           make_images.curve_subdivide(curve, left, right)
+
+        Returns:
+            Tuple[Curve, Curve]: The left and right sub-curves.
+        """
+        left_nodes, right_nodes = _curve_helpers.subdivide_nodes(self._nodes)
+        left = Curve(left_nodes, self._degree, copy=False, verify=False)
+        right = Curve(right_nodes, self._degree, copy=False, verify=False)
+        return left, right
+
